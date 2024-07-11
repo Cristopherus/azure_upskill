@@ -1,5 +1,7 @@
 locals {
-  static_index = split("/", var.container.static_index)[1]
+  static_index      = split("/", var.container.static_index)[1]
+  connection_string = var.storage_account != null ? var.storage_account.primary_connection_string : azurerm_storage_account.this.primary_connection_string
+  # sas               = data.azurerm_storage_account_sas.this
 }
 
 resource "azurerm_storage_account" "this" {
@@ -18,59 +20,21 @@ resource "azurerm_storage_account" "this" {
   tags = var.tags
 }
 
-# resource "azurerm_storage_container" "this" {
-#   name                  = var.container.name
-#   storage_account_name  = azurerm_storage_account.this.name
-#   container_access_type = var.container.access_type
-# }
+data "azurerm_storage_account_blob_container_sas" "this" {
+  connection_string = var.storage_account.primary_connection_string
+  container_name    = var.container_name
 
-# resource "azurerm_storage_account_sas" "this" {
-#   storage_account_name = azurerm_storage_account.storage.name
-#   https_only           = true
-#   start                = formatdate("YYYY-MM-DD", timestamp())
-#   expiry               = formatdate("YYYY-MM-DD", timeadd(timestamp(), "24h"))
-#   permissions          = "racwdl"
-#   services             = "b"
-#   resource_types       = "sco"
-
-#   depends_on = [azurerm_storage_blob.this]
-# }
-
-data "azurerm_storage_account_sas" "this" {
-  connection_string = azurerm_storage_account.this.primary_connection_string
-  https_only        = true
-  signed_version    = "2017-07-29"
-
-  resource_types {
-    service   = true
-    container = false
-    object    = false
-  }
-
-  services {
-    blob  = true
-    queue = false
-    table = false
-    file  = false
-  }
-
-  start  = "2018-03-21T00:00:00Z"
-  expiry = "2025-03-21T00:00:00Z"
+  start  = "2018-03-21"
+  expiry = "2025-03-21"
 
   permissions {
-    read    = true
-    write   = true
-    delete  = false
-    list    = false
-    add     = true
-    create  = true
-    update  = false
-    process = false
-    tag     = false
-    filter  = false
+    read   = true
+    add    = true
+    create = true
+    write  = true
+    delete = true
+    list   = true
   }
-
-  depends_on = [azurerm_storage_account.this]
 }
 
 resource "azurerm_storage_blob" "this" {
@@ -80,6 +44,7 @@ resource "azurerm_storage_blob" "this" {
   type                   = "Block"
   content_type           = "text/html"
   source                 = "${path.root}/${var.container.static_index}"
+  content_md5            = local_file.this.content_base64
 
   depends_on = [local_file.this]
 }
@@ -88,13 +53,12 @@ data "template_file" "html_template" {
   template = file("${path.root}/${var.container.static_index}.tpl")
 
   vars = {
-    sas_token            = data.azurerm_storage_account_sas.this.sas
-    storage_account_name = azurerm_storage_account.this.name
-    container_name       = "$web" #azurerm_storage_container.container.name
-    # file_name            = local.static_index
+    sas_token            = data.azurerm_storage_account_blob_container_sas.this.sas
+    storage_account_name = var.storage_account.name
+    container_name       = var.container_name
   }
 
-  depends_on = [azurerm_storage_account.this, data.azurerm_storage_account_sas.this]
+  depends_on = [azurerm_storage_account.this]
 }
 
 resource "local_file" "this" {

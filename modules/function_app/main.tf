@@ -28,28 +28,31 @@ resource "azurerm_app_service_plan" "this" {
   }
 }
 
-# resource "azurerm_function_app" "this" {
-#   name                = "${var.project}-${var.environment}-function-app"
-#   resource_group_name = azurerm_resource_group.resource_group.name
-#   location            = var.location
-#   app_service_plan_id = azurerm_app_service_plan.app_service_plan.id
-#   app_settings = {
-#     "WEBSITE_RUN_FROM_PACKAGE"       = "",
-#     "FUNCTIONS_WORKER_RUNTIME"       = "node",
-#     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.application_insights.instrumentation_key,
-#   }
-#   os_type = "linux"
-#   site_config {
-#     linux_fx_version          = "node|14"
-#     use_32_bit_worker_process = false
-#   }
-#   storage_account_name       = azurerm_storage_account.storage_account.name
-#   storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
-#   version                    = "~3"
+resource "azurerm_function_app" "this" {
+  name                       = "${var.function_name}-app"
+  location                   = var.location
+  resource_group_name        = var.resource_group_name
+  app_service_plan_id        = azurerm_app_service_plan.this.id
+  storage_account_name       = azurerm_storage_account.this.name
+  storage_account_access_key = azurerm_storage_account.this.primary_access_key
+  site_config {
+    dotnet_framework_version = "v6.0"
+  }
+}
 
-#   lifecycle {
-#     ignore_changes = [
-#       app_settings["WEBSITE_RUN_FROM_PACKAGE"],
-#     ]
-#   }
-# }
+
+resource "azurerm_storage_container" "this" {
+  name                  = var.function_name
+  storage_account_name  = azurerm_storage_account.this.name
+  container_access_type = "private"
+}
+
+
+resource "azurerm_storage_blob" "storage_blob_function" {
+  name                   = "app.zip"
+  storage_account_name   = azurerm_storage_account.this.name
+  storage_container_name = azurerm_storage_container.this.name
+  type                   = "Block"
+  # content_md5            = data.archive_file.function.output_md5
+  source = "${path.module}/app.zip"
+}

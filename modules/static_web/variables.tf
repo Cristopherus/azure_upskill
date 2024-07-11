@@ -34,3 +34,13 @@ variable "container" {
     static_index = optional(string)
   })
 }
+
+variable "storage_account" {
+  type    = any
+  default = null
+}
+
+variable "container_name" {
+  type    = string
+  default = null
+}

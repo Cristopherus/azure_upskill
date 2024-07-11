@@ -6,6 +6,16 @@ resource "azurerm_storage_account" "this" {
   account_replication_type = var.account_replication_type
   account_kind             = var.account_kind
 
+  blob_properties {
+    cors_rule {
+      allowed_headers    = ["*"]
+      allowed_methods    = ["GET", "HEAD", "POST", "PUT"]
+      allowed_origins    = ["*"]
+      exposed_headers    = ["*"]
+      max_age_in_seconds = 3600
+    }
+  }
+
   tags = var.tags
 }
 

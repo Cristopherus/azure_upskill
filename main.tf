@@ -18,16 +18,16 @@ resource "azurerm_resource_group" "this" {
 #   tags = var.tags
 # }
 
-# module "containers" {
-#   source   = "./modules/storage"
-#   for_each = var.containers
+module "containers" {
+  source   = "./modules/storage"
+  for_each = var.containers
 
-#   resource_group_name = azurerm_resource_group.this.name
-#   location            = azurerm_resource_group.this.location
-#   container           = each.value
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+  container           = each.value
 
-#   tags = var.tags
-# }
+  tags = var.tags
+}
 
 module "static_web" {
   source = "./modules/static_web"
@@ -35,6 +35,8 @@ module "static_web" {
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
   container           = var.static_web
+  storage_account     = module.containers["first"].storage_account
+  container_name      = module.containers["first"].container_name
 
   tags = var.tags
 }
@@ -49,6 +51,6 @@ module "static_web" {
 #   tags = var.tags
 # }
 
-# output "web_host" {
-#   value = module.static_web.primary_web_host
-# }
+output "web_host" {
+  value = module.static_web.primary_web_host
+}
