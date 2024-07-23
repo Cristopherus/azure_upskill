@@ -15,11 +15,11 @@ tags = {
 # }
 
 containers = {
-  first = {
+  upload = {
     name        = "krdziuban1"
     access_type = "private"
   },
-  second = {
+  result = {
     name        = "krdziuban2"
     access_type = "private"
   }

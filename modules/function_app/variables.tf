@@ -4,6 +4,10 @@ variable "tags" {
   })
 }
 
+variable "function_name" {
+  type = string
+}
+
 variable "resource_group_name" {
   type = string
 }
@@ -27,11 +31,8 @@ variable "account_kind" {
   default = "StorageV2"
 }
 
-variable "function_name" {
-  type = string
-}
 
-variable "application_type" {
-  type    = string
-  default = "other"
-}
+# variable "application_type" {
+#   type    = string
+#   default = "other"
+# }

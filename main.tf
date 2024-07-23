@@ -35,21 +35,21 @@ module "static_web" {
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
   container           = var.static_web
-  storage_account     = module.containers["first"].storage_account
-  container_name      = module.containers["first"].container_name
+  storage_account     = module.containers["upload"].storage_account
+  container_name      = module.containers["upload"].container_name
 
   tags = var.tags
 }
 
-# module "function" {
-#   source = "./modules/function_app"
+module "function" {
+  source = "./modules/function_app"
 
-#   resource_group_name = azurerm_resource_group.this.name
-#   location            = azurerm_resource_group.this.location
-#   function_name       = var.function_name
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+  function_name       = var.function_name
 
-#   tags = var.tags
-# }
+  tags = var.tags
+}
 
 output "web_host" {
   value = module.static_web.primary_web_host

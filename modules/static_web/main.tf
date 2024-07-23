@@ -1,7 +1,5 @@
 locals {
-  static_index      = split("/", var.container.static_index)[1]
-  connection_string = var.storage_account != null ? var.storage_account.primary_connection_string : azurerm_storage_account.this.primary_connection_string
-  # sas               = data.azurerm_storage_account_sas.this
+  static_index = split("/", var.container.static_index)[1]
 }
 
 resource "azurerm_storage_account" "this" {
